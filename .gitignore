@@ -1,6 +1,7 @@
 # Build artifacts
 obj_dir/
 sim/
+tests/isa/build/
 
 # Verilator outputs
 *.vcd

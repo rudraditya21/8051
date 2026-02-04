@@ -22,6 +22,15 @@ A full MCS‑51/8051 microcontroller implementation in SystemVerilog, with CPU c
 make sim
 ```
 
+## ISA validation (differential testing)
+The ISA validation harness compares RTL against a golden 8051 emulator (ucsim) and checks XDATA dumps.
+
+```sh
+python3 tests/isa/run_isa_validation.py
+```
+
+See `tests/isa/README.md` for dependencies and options.
+
 ## Top level
 The top‑level MCU wrapper is `rtl/mcs51_mcu.sv` and exposes port pins plus internal ROM/XDATA memories for simulation.
 

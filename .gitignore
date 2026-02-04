@@ -1,0 +1,13 @@
+# Build artifacts
+obj_dir/
+sim/
+
+# Verilator outputs
+*.vcd
+*.fst
+*.log
+*.o
+*.d
+
+# OS files
+.DS_Store

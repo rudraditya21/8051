@@ -43,6 +43,8 @@ module tb_mcs51;
   end
 
   initial begin
+    int unsigned timeout;
+
     reset_n = 1'b0;
     p0_in = 8'hFF;
     p1_in = 8'hFF;
@@ -51,8 +53,18 @@ module tb_mcs51;
     #50;
     reset_n = 1'b1;
 
-    repeat (2000) @(posedge clk);
+    timeout = 50000;
+    while (timeout > 0) begin
+      if (dut.xdata_mem[16'h0100] === 8'h1A &&
+          dut.xdata_mem[16'h0101] === 8'h10 &&
+          dut.xdata_mem[16'h0102] === 8'h77) begin
+        break;
+      end
+      @(posedge clk);
+      timeout--;
+    end
 
+    if (timeout == 0) $fatal(1, "Timeout waiting for XDATA results");
     if (dut.xdata_mem[16'h0100] !== 8'h1A) $fatal(1, "XDATA[0100] expected 1A, got %02x", dut.xdata_mem[16'h0100]);
     if (dut.xdata_mem[16'h0101] !== 8'h10) $fatal(1, "XDATA[0101] expected 10, got %02x", dut.xdata_mem[16'h0101]);
     if (dut.xdata_mem[16'h0102] !== 8'h77) $fatal(1, "XDATA[0102] expected 77, got %02x", dut.xdata_mem[16'h0102]);

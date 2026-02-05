@@ -25,6 +25,28 @@ package mcs51_pkg;
   localparam logic [7:0] SFR_ACC  = 8'hE0;
   localparam logic [7:0] SFR_B    = 8'hF0;
 
+  // Reset values (Intel MCS-51 Programmer's Guide and Instruction Set)
+  localparam logic [7:0] RESET_ACC  = 8'h00;
+  localparam logic [7:0] RESET_B    = 8'h00;
+  localparam logic [7:0] RESET_PSW  = 8'h00;
+  localparam logic [7:0] RESET_SP   = 8'h07;
+  localparam logic [7:0] RESET_DPL  = 8'h00;
+  localparam logic [7:0] RESET_DPH  = 8'h00;
+  localparam logic [7:0] RESET_PCON = 8'h00;
+  localparam logic [7:0] RESET_P0   = 8'hFF;
+  localparam logic [7:0] RESET_P1   = 8'hFF;
+  localparam logic [7:0] RESET_P2   = 8'hFF;
+  localparam logic [7:0] RESET_P3   = 8'hFF;
+  localparam logic [7:0] RESET_TCON = 8'h00;
+  localparam logic [7:0] RESET_TMOD = 8'h00;
+  localparam logic [7:0] RESET_TL0  = 8'h00;
+  localparam logic [7:0] RESET_TH0  = 8'h00;
+  localparam logic [7:0] RESET_TL1  = 8'h00;
+  localparam logic [7:0] RESET_TH1  = 8'h00;
+  localparam logic [7:0] RESET_SCON = 8'h00;
+  localparam logic [7:0] RESET_IE   = 8'h00;
+  localparam logic [7:0] RESET_IP   = 8'h00;
+
   // Interrupt vectors
   localparam logic [15:0] VEC_INT0  = 16'h0003;
   localparam logic [15:0] VEC_T0    = 16'h000B;

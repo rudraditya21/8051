@@ -41,8 +41,20 @@ The top‑level MCU wrapper is `rtl/mcs51_mcu.sv` and exposes port pins plus int
 - `CODE_INIT_FILE` (hex file for ROM initialization)
 
 ## Notes
-- Clock is treated as the machine‑cycle clock.
+- Clock is treated as the machine‑cycle clock; instruction timing matches classic 8051 machine‑cycle counts.
 - Port outputs are modeled as quasi‑bidirectional (`p*_oe` drives low when latch=0).
+- Illegal/undefined opcodes are treated as `NOP` (no state change) and consume one machine cycle; `illegal_op` pulses high for one cycle in `mcs51_core`.
+
+## Reset State
+SFR reset values implemented match classic 8051 defaults:
+
+- `ACC=00`, `B=00`, `PSW=00`, `SP=07`
+- `DPL=00`, `DPH=00`, `PCON=00`
+- `P0=P1=P2=P3=FF`
+- `TCON=00`, `TMOD=00`, `TL0=00`, `TH0=00`, `TL1=00`, `TH1=00`
+- `SCON=00`, `IE=00`, `IP=00`
+
+Internal RAM contents are not explicitly reset.
 
 ## Testbench
 `tb/tb_mcs51.sv` loads `tb/rom_basic.hex` and checks XDATA results after execution.

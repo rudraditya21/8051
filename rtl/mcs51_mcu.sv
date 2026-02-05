@@ -51,6 +51,7 @@ module mcs51_mcu #(
   logic        int_ack;
   logic        reti_pulse;
   logic [7:0]  pcon_out;
+  logic        illegal_op;
 
   // Program memory
   logic [7:0] code_mem [0:CODE_SIZE-1];
@@ -133,7 +134,8 @@ module mcs51_mcu #(
     .int_prio(int_prio),
     .int_ack(int_ack),
     .reti_pulse(reti_pulse),
-    .pcon_out(pcon_out)
+    .pcon_out(pcon_out),
+    .illegal_op(illegal_op)
   );
 
   // Port outputs (quasi-bidirectional)
@@ -147,7 +149,7 @@ module mcs51_mcu #(
   assign p2_oe = ~p2_latch;
   assign p3_oe = {~p3_latch[7:2], 1'b1, ~p3_latch[0]};
 
-  assign unused_mcu = xdata_re ^ reti_pulse ^ ^pcon_out[6:0] ^ p3_latch[1] ^ ^sbuf_tx;
+  assign unused_mcu = xdata_re ^ reti_pulse ^ ^pcon_out[6:0] ^ p3_latch[1] ^ ^sbuf_tx ^ illegal_op;
 
   // SFR read mux
   always_comb begin
@@ -209,24 +211,24 @@ module mcs51_mcu #(
   // Peripheral/SFR update
   always_ff @(posedge clk or negedge reset_n) begin
     if (!reset_n) begin
-      p0_latch <= 8'hFF;
-      p1_latch <= 8'hFF;
-      p2_latch <= 8'hFF;
-      p3_latch <= 8'hFF;
+      p0_latch <= RESET_P0;
+      p1_latch <= RESET_P1;
+      p2_latch <= RESET_P2;
+      p3_latch <= RESET_P3;
 
-      tcon <= 8'h00;
-      tmod <= 8'h00;
-      tl0 <= 8'h00;
-      th0 <= 8'h00;
-      tl1 <= 8'h00;
-      th1 <= 8'h00;
+      tcon <= RESET_TCON;
+      tmod <= RESET_TMOD;
+      tl0 <= RESET_TL0;
+      th0 <= RESET_TH0;
+      tl1 <= RESET_TL1;
+      th1 <= RESET_TH1;
 
-      scon <= 8'h00;
+      scon <= RESET_SCON;
       sbuf_tx <= 8'h00;
       sbuf_rx <= 8'h00;
 
-      ie <= 8'h00;
-      ip <= 8'h00;
+      ie <= RESET_IE;
+      ip <= RESET_IP;
 
       tx_busy <= 1'b0;
       rx_busy <= 1'b0;

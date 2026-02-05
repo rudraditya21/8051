@@ -391,6 +391,8 @@ module mcs51_core #(
       logic [7:0] op_exec;
       logic [7:0] op1_exec;
       logic [7:0] op2_exec;
+      logic [1:0] int_level_next;
+      logic [1:0] int_sp_next;
 
       // Defaults each cycle
       sfr_we <= 1'b0;
@@ -410,6 +412,8 @@ module mcs51_core #(
       op1_exec = pf1;
       op2_exec = pf2;
       flush_prefetch = 1'b0;
+      int_level_next = int_level;
+      int_sp_next = int_sp;
 
       // Decrement wait counter if active
       if (wait_cnt != 3'd0) begin
@@ -486,11 +490,11 @@ module mcs51_core #(
             pc_next = {iram_read(sp_next), iram_read(sp_next - 8'd1)};
             sp_next = sp_next - 8'd2;
             reti_pulse <= 1'b1;
-            if (int_sp != 0) begin
-              int_sp <= int_sp - 2'd1;
-              int_level <= int_stack[int_sp - 2'd1];
+            if (int_sp_next != 0) begin
+              int_sp_next = int_sp_next - 2'd1;
+              int_level_next = int_stack[int_sp_next];
             end else begin
-              int_level <= 2'd0;
+              int_level_next = 2'd0;
             end
           end
 
@@ -922,16 +926,16 @@ module mcs51_core #(
         endcase
 
         // Interrupt handling at instruction boundary
-        if (int_req && ((int_prio == 1'b1 && int_level < 2'd2) || (int_prio == 1'b0 && int_level == 2'd0))) begin
+        if (int_req && ((int_prio == 1'b1 && int_level_next < 2'd2) || (int_prio == 1'b0 && int_level_next == 2'd0))) begin
           // Push PC
           sp_next = sp_next + 8'd1;
           iram_write(sp_next, pc_next[7:0]);
           sp_next = sp_next + 8'd1;
           iram_write(sp_next, pc_next[15:8]);
           // Update interrupt level stack
-          int_stack[int_sp] <= int_level;
-          int_sp <= int_sp + 2'd1;
-          int_level <= (int_prio ? 2'd2 : 2'd1);
+          int_stack[int_sp_next] <= int_level_next;
+          int_sp_next = int_sp_next + 2'd1;
+          int_level_next = (int_prio ? 2'd2 : 2'd1);
           // Vector
           pc_next = int_vector;
           int_ack <= 1'b1;
@@ -968,6 +972,8 @@ module mcs51_core #(
       pf1 <= pf1_next;
       pf2 <= pf2_next;
       fetch_pc <= fetch_pc_next;
+      int_level <= int_level_next;
+      int_sp <= int_sp_next;
     end
   end
   /* verilator lint_on BLKSEQ */

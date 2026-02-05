@@ -24,7 +24,7 @@ def run(cmd, **kwargs):
 
 
 def gen_rom(out_hex, out_sym):
-    script = ROOT / "tests/isa/gen_isa_basic.py"
+    script = ROOT / "tests/isa/gen_isa_full.py"
     run(["python3", str(script), "--out", str(out_hex), "--sym", str(out_sym)])
 
 
@@ -74,8 +74,8 @@ def main():
     build_dir = ROOT / "tests/isa/build"
     build_dir.mkdir(parents=True, exist_ok=True)
 
-    rom = Path(args.rom) if args.rom else build_dir / "isa_basic.hex"
-    sym = Path(args.sym) if args.sym else build_dir / "isa_basic.sym.json"
+    rom = Path(args.rom) if args.rom else build_dir / "isa_full.hex"
+    sym = Path(args.sym) if args.sym else build_dir / "isa_full.sym.json"
 
     if not rom.exists() or not sym.exists():
         gen_rom(rom, sym)
@@ -90,11 +90,17 @@ def main():
         raise SystemExit("done label not found in sym file")
     done_addr = labels["done"]
 
+    dump_begin = args.dump_begin
+    dump_end = args.dump_end
+    if dump_begin == 0 and dump_end == 0x0FFF:
+        dump_begin = labels.get("_dump_begin", dump_begin)
+        dump_end = labels.get("_dump_end", dump_end)
+
     # Run ucsim and dump XRAM
     ucsim_cmds = "\n".join([
         f"break 0x{done_addr:04X}",
         "run",
-        f"dump xram 0x{args.dump_begin:04X} 0x{args.dump_end:04X}",
+        f"dump xram 0x{dump_begin:04X} 0x{dump_end:04X}",
         "quit",
         "",
     ])
@@ -117,8 +123,8 @@ def main():
         f"ROM={rom}",
         f"DUMP={dump_rtl}",
         f"MAX={args.max_cycles}",
-        f"DUMP_BEGIN={args.dump_begin}",
-        f"DUMP_END={args.dump_end}",
+        f"DUMP_BEGIN={dump_begin}",
+        f"DUMP_END={dump_end}",
     ]
     run(rtl_cmd, cwd=str(ROOT))
 
@@ -126,7 +132,7 @@ def main():
 
     # Compare
     mismatches = []
-    for addr in range(args.dump_begin, args.dump_end + 1):
+    for addr in range(dump_begin, dump_end + 1):
         rv = rtl_mem.get(addr, 0)
         uv = ucsim_mem.get(addr, 0)
         if rv != uv:

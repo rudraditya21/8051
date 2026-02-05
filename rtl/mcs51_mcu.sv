@@ -44,6 +44,7 @@ module mcs51_mcu #(
   logic [7:0]  sfr_waddr;
   logic [7:0]  sfr_wdata;
   logic        sfr_we;
+  logic        sfr_rmw;
 
   logic        int_req;
   logic [15:0] int_vector;
@@ -129,6 +130,7 @@ module mcs51_mcu #(
     .sfr_waddr(sfr_waddr),
     .sfr_wdata(sfr_wdata),
     .sfr_we(sfr_we),
+    .sfr_rmw(sfr_rmw),
     .int_req(int_req),
     .int_vector(int_vector),
     .int_prio(int_prio),
@@ -154,10 +156,10 @@ module mcs51_mcu #(
   // SFR read mux
   always_comb begin
     unique case (sfr_raddr)
-      SFR_P0:   sfr_rdata = p0_in;
-      SFR_P1:   sfr_rdata = p1_in;
-      SFR_P2:   sfr_rdata = p2_in;
-      SFR_P3:   sfr_rdata = p3_in;
+      SFR_P0:   sfr_rdata = sfr_rmw ? p0_latch : p0_in;
+      SFR_P1:   sfr_rdata = sfr_rmw ? p1_latch : p1_in;
+      SFR_P2:   sfr_rdata = sfr_rmw ? p2_latch : p2_in;
+      SFR_P3:   sfr_rdata = sfr_rmw ? p3_latch : p3_in;
       SFR_TCON: sfr_rdata = tcon;
       SFR_TMOD: sfr_rdata = tmod;
       SFR_TL0:  sfr_rdata = tl0;

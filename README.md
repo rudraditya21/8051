@@ -22,6 +22,11 @@ A full MCS‑51/8051 microcontroller implementation in SystemVerilog, with CPU c
 make sim
 ```
 
+RMW port‑latch check:
+```sh
+make rmw
+```
+
 ## ISA validation (differential testing)
 The ISA validation harness compares RTL against a golden 8051 emulator (ucsim) and checks XDATA dumps.
 
@@ -30,6 +35,7 @@ python3 tests/isa/run_isa_validation.py
 ```
 
 See `tests/isa/README.md` for dependencies and options.
+The default ROM generator is `tests/isa/gen_isa_full.py`, which exercises the full instruction set with flag and bit-operation coverage.
 
 ## Top level
 The top‑level MCU wrapper is `rtl/mcs51_mcu.sv` and exposes port pins plus internal ROM/XDATA memories for simulation.
@@ -58,6 +64,7 @@ Internal RAM contents are not explicitly reset.
 
 ## Testbench
 `tb/tb_mcs51.sv` loads `tb/rom_basic.hex` and checks XDATA results after execution.
+`tb/tb_rmw.sv` validates port read‑modify‑write behavior.
 
 ## Status
 Core, peripherals, and testbench are implemented and pass the basic ROM test.

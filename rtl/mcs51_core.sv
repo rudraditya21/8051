@@ -28,6 +28,7 @@ module mcs51_core #(
   output logic [7:0]  sfr_waddr,
   output logic [7:0]  sfr_wdata,
   output logic        sfr_we,
+  output logic        sfr_rmw,
 
   // Interrupt request interface
   input  logic        int_req,
@@ -159,6 +160,22 @@ module mcs51_core #(
   function automatic logic [15:0] rel8(input logic [7:0] v);
     rel8 = {{8{v[7]}}, v};
   endfunction
+
+  function automatic logic is_port_sfr(input logic [7:0] addr);
+    begin
+      is_port_sfr = (addr == SFR_P0) || (addr == SFR_P1) || (addr == SFR_P2) || (addr == SFR_P3);
+    end
+  endfunction
+
+  /* verilator lint_off UNUSEDSIGNAL */
+  function automatic logic is_port_bit(input logic [7:0] bit_addr);
+    logic [7:0] base;
+    begin
+      base = {bit_addr[7:3], 3'b000};
+      is_port_bit = is_port_sfr(base);
+    end
+  endfunction
+  /* verilator lint_on UNUSEDSIGNAL */
 
   assign instr_len_next = instr_length(pf0);
   assign exec_pulse = (wait_cnt == 3'd0) && (pf_count >= instr_len_next);
@@ -295,6 +312,7 @@ module mcs51_core #(
   // SFR read address for external SFRs (combinational)
   always_comb begin
     sfr_raddr = 8'h00;
+    sfr_rmw = 1'b0;
     unique case (exec_opcode)
       // Bit-addressable SFR reads (bit ops)
       8'h10, 8'h20, 8'h30, 8'h72, 8'h82, 8'hA0, 8'hB0, 8'hA2, 8'h92, 8'hB2, 8'hC2, 8'hD2:
@@ -309,6 +327,20 @@ module mcs51_core #(
       8'h85: sfr_raddr = exec_op2;
       default: sfr_raddr = 8'h00;
     endcase
+
+    if (exec_pulse) begin
+      unique case (exec_opcode)
+        // Direct read-modify-write ops on SFRs
+        8'h05, 8'h15, 8'hD5, 8'h42, 8'h43, 8'h52, 8'h53, 8'h62, 8'h63: begin
+          if (is_port_sfr(exec_op1)) sfr_rmw = 1'b1;
+        end
+        // Bit read-modify-write ops (bit address in op1)
+        8'h10, 8'h92, 8'hB2, 8'hC2, 8'hD2: begin
+          if (is_port_bit(exec_op1)) sfr_rmw = 1'b1;
+        end
+        default: begin end
+      endcase
+    end
   end
 
   // Code address multiplexer (prefetch vs MOVC data access)

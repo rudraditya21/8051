@@ -13,7 +13,7 @@ DUMP_END ?= 4095
 
 all: sim
 
-.PHONY: all sim isa rmw clean
+.PHONY: all sim isa rmw check clean
 
 sim:
 	$(VERILATOR) -Wall -sv --timing --binary $(RTL) $(TB) --top-module tb_mcs51
@@ -26,6 +26,8 @@ isa:
 rmw:
 	$(VERILATOR) -Wall -sv --timing --binary $(RTL) $(RMW_TB) --top-module tb_rmw
 	./obj_dir/Vtb_rmw
+
+check: sim rmw
 
 clean:
 	rm -rf obj_dir

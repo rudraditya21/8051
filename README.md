@@ -27,6 +27,11 @@ RMW port‑latch check:
 make rmw
 ```
 
+Full local check (sim + RMW):
+```sh
+make check
+```
+
 ## ISA validation (differential testing)
 The ISA validation harness compares RTL against a golden 8051 emulator (ucsim) and checks XDATA dumps.
 
@@ -68,3 +73,4 @@ Internal RAM contents are not explicitly reset.
 
 ## Status
 Core, peripherals, and testbench are implemented and pass the basic ROM test.
+Release metadata lives in `VERSION` and `CHANGELOG.md`.

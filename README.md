@@ -12,10 +12,28 @@ A full MCS‑51/8051 microcontroller implementation in SystemVerilog, with CPU c
 - XDATA interface and on‑chip XDATA RAM model
 - Verilator testbench with ROM loader
 
-## Directory layout
-- `rtl/` RTL sources
-- `tb/` Testbench and ROM images
-- `sim/` (reserved) simulation assets
+## 8051 architecture
+```mermaid
+flowchart TD
+    ROM["Program ROM / Code Memory"] --> BUS["Internal Address / Data Bus"]
+    XRAM["XDATA RAM / External Data Interface"] <--> BUS
+
+    subgraph MCU["MCS-51 MCU"]
+        BUS <--> CPU["CPU Core<br/>ALU + Decoder + Registers"]
+        CPU <--> IRAM["Internal RAM<br/>Register Banks + Stack + Bit RAM"]
+        CPU <--> SFR["SFR Space"]
+        SFR --> TMR["Timers T0 / T1"]
+        SFR --> UART["Serial Port"]
+        SFR --> GPIO["Ports P0 / P1 / P2 / P3"]
+        SFR --> INTC["Interrupt Controller"]
+    end
+
+    GPIO <--> PINS["External Pins"]
+    UART <--> RXTX["RXD / TXD"]
+    TMR --> INTC
+    RXTX --> INTC
+    PINS --> INTC
+```
 
 ## Build and run (Verilator)
 ```sh
